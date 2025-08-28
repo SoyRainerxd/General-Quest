@@ -1,0 +1,468 @@
+using System.Security.Cryptography.X509Certificates;
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Net.Mime;
+using System.Threading.Tasks;
+using System.Media;
+
+
+namespace PreguntasGenerales;
+
+class Program
+{
+
+
+    static void Main(string[] args)
+    {
+
+        
+
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine(@"
+
+        
+         ▐▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▌
+         ▐ ________  _______   ________  ________  ___  ___  ___  ________  ________  _______   ________     ▌
+         ▐|\   ____\|\  ___ \ |\   __  \|\   __  \|\  \|\  \|\  \|\_____  \|\_____  \|\  ___ \ |\   __  \    ▌
+         ▐\ \  \___|\ \   __/|\ \  \|\  \ \  \|\  \ \  \\\  \ \  \\|___/  /|\|___/  /\ \   __/|\ \  \|\  \   ▌
+         ▐ \ \  \  __\ \  \_|/_\ \  \\\  \ \  \\\  \ \  \\\  \ \  \   /  / /    /  / /\ \  \_|/_\ \   _  _\  ▌
+         ▐  \ \  \|\  \ \  \_|\ \ \  \\\  \ \  \\\  \ \  \\\  \ \  \ /  /_/__  /  /_/__\ \  \_|\ \ \  \\  \| ▌
+         ▐   \ \_______\ \_______\ \_______\ \_____  \ \_______\ \__\\________\\________\ \_______\ \__\\ _\ ▌
+         ▐    \|_______|\|_______|\|_______|\|___| \__\|_______|\|__|\|_______|\|_______|\|_______|\|__|\|__|▌
+         ▐                                        \|__|                                                      ▌
+         ▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌
+        
+        
+        ");
+        Musica("INTRO GEOQUIZZER.wav").Play();
+        Thread.Sleep(5400); // arreglar antes de acabar
+        Console.ResetColor();
+
+        while (true)
+        {
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(@"
+╔══════════════════════════════════════╗
+║         🌍 MENÚ PRINCIPAL            ║ 
+╠══════════════════════════════════════╣
+║  1. Capitales Del mundo              ║
+║  2. Preguntas Cultura General        ║
+║  3. Preguntas Musicales              ║
+║  4. ULTIMATIUM (1VS1)                ║
+║  5. Mostrar Ganadores                ║
+║  0. Salir                            ║
+╚══════════════════════════════════════╝");
+
+            Console.ResetColor();
+            MensajeNaranja("Elige una opción (1-5): ");
+            MensajeNaranja("\n respuesta: ");
+            string input1 = Console.ReadLine()!;
+
+            if (Int32.TryParse(input1, out int resp1) && resp1 >= 0)
+            {
+                Console.Clear();
+                if (resp1 == 0) break;
+
+                string archivo = "";
+                int modoAJugar = 0;
+                switch (resp1)
+                {
+                    case 1:
+
+                        modoAJugar = ModoDeJuego();
+
+                        archivo = "PreguntasGenerales.txt";
+                        if (modoAJugar == 1) modoSinglePLayer(archivo);
+                        else if (modoAJugar == 2) JugarMultijugador(archivo);
+
+                        else
+                        {
+                            MensajeRojo("Opcion Invalida.");
+                            return;
+                        }
+
+                        break;
+                    case 2:
+                        modoAJugar = ModoDeJuego();
+
+                        archivo = "PreguntasCultural.txt";
+                        if (modoAJugar == 1) modoSinglePLayer(archivo);
+                        else if (modoAJugar == 2) JugarMultijugador(archivo);
+
+                        else
+                        {
+                            MensajeRojo("Opcion Invalida.");
+                            return;
+                        }
+
+                        break;
+
+
+                    case 3:
+                        modoAJugar = ModoDeJuego();
+
+                        archivo = "iq.txt";
+                        if (modoAJugar == 1) modoSinglePLayer(archivo);
+                        else if (modoAJugar == 2) JugarMultijugador(archivo);
+
+                        else
+                        {
+                            MensajeRojo("Opcion Invalida.");
+                            return;
+                        }
+                        break;
+                    case 4:
+
+                        archivo = "ultimatium.txt";
+                        JugarMultijugador(archivo);
+
+                        break;
+                    default:
+                        MensajeRojo("Opcion Invalida.");
+                        break;
+
+                    case 5:
+                        MostrarGanadores();
+                        break;
+                }
+            }
+        }
+    }
+
+    public static string[][] CargarPreguntasMezcladas(string archivo)
+    {
+        string contenido = File.ReadAllText(archivo);
+        string[] bloques = contenido.Split(new string[] { "\r\n\r\n", "\n\n" }, StringSplitOptions.RemoveEmptyEntries);
+
+        string[][] preguntas = new string[bloques.Length][];
+        for (int i = 0; i < bloques.Length; i++)
+        {
+            preguntas[i] = bloques[i].Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        // Mezclar
+        Random rnd = new Random();
+        for (int i = 0; i < preguntas.Length; i++)
+        {
+            int j = rnd.Next(i, preguntas.Length);
+            string[] temp = preguntas[i];
+            preguntas[i] = preguntas[j];
+            preguntas[j] = temp;
+        }
+
+        return preguntas;
+    }
+
+    public static bool MostrarPregunta(string[] lineas)
+    {
+
+        foreach (string linea in lineas)
+        {
+            Console.WriteLine(linea.Replace("*", "").Trim());
+        }
+
+        string respuesta;
+        while (true)
+        {
+            MensajeNaranja("\nTu respuesta (a, b, c, d): ");
+            respuesta = Console.ReadLine()!.Trim().ToLower();
+
+            if (respuesta == "a" || respuesta == "b" || respuesta == "c" || respuesta == "d")
+            {
+                break;
+            }
+
+            MensajeRojo("❗ Respuesta inválida. Por favor, escribe a, b, c o d.");
+
+        }
+
+
+        foreach (string linea in lineas)
+        {
+            if (linea.Contains("*"))
+            {
+                if (linea.Trim().ToLower().StartsWith(respuesta))
+                {
+                    MensajeVerde("✅ Correcto!");
+                    return true;
+                }
+                else
+                {
+                    MensajeRojo($"❌ Incorrecto. La respuesta correcta era: {linea.Replace("*", "").Trim()}");
+                    Musica(RamdomSonidoPerder()).Play();
+                    
+                    
+                    return false;
+                }
+            }
+        }
+
+        return false;
+    }
+
+
+
+    public static void modoSinglePLayer(string archivo)
+    {
+
+        string[][] preguntas = CargarPreguntasMezcladas(archivo);
+        int puntos = 0;
+        Console.Clear();
+        MensajeNaranja("\nIngresa tu nombre: ");
+        string nombre = Console.ReadLine()!;
+
+        MensajeNaranja("¿Cuántas preguntas deseas responder? (Máximo: " + preguntas.Length + ")\nrespuesta: ");
+        int cantidad = int.Parse(Console.ReadLine()!);
+        cantidad = Math.Min(cantidad, preguntas.Length);
+
+        Console.Clear();
+
+        Musica("mariocarSTART.wav").Play();
+
+        for (int i = 3; i >= 1; i--)
+        {
+            Console.WriteLine(i + "...");
+            Thread.Sleep(1150);
+        }
+
+
+        for (int i = 0; i < cantidad; i++)
+        {
+            Console.Clear();
+            MensajeAzul($"Pregunta {i + 1} de {cantidad}");
+
+            if (MostrarPregunta(preguntas[i]))
+            {
+                puntos++;
+            }
+
+            MensajeNaranja("\nPresiona ENTER para continuar...");
+            Console.ReadLine();
+        }
+        Console.Clear();
+        MensajeAzul($"Juego terminado. Obtuviste {puntos} punto(s) de {cantidad}.");
+
+        GuardarGanadores("ganadores.txt", nombre, puntos);
+
+        MensajeNaranja("Presione cualquier tecla para continuar...");
+        Console.ReadKey();
+
+    }
+
+
+    //==========================//
+    static void JugarMultijugador(string archivo)
+    {
+        Console.Clear();
+        MensajeNaranja("Cuantos jugadores jugaran? (2-5): ");
+
+        if (!int.TryParse(Console.ReadLine(), out int cantidadJugadores) || cantidadJugadores < 2 || cantidadJugadores > 5)
+        {
+            MensajeRojo("Error. Se esperaba un numero del 1 al 5.");
+            return;
+        }
+        //guardamos el nombre de cada uno de los jugadores y donde se guardara el puntaje de cada jugador.
+        string[] nombresJugadores = new string[cantidadJugadores];
+        int[] puntajeJugadores = new int[cantidadJugadores];
+
+        for (int i = 0; i < nombresJugadores.Length; i++)
+        {
+            MensajeNaranja($"Ingrese el nombre del jugador {i + 1}: ");
+
+            string nombre = Console.ReadLine()!;
+            while (string.IsNullOrEmpty(nombre))
+            {
+                Console.Clear();
+                MensajeNaranja($"Ingrese el nombre del jugador {i + 1}: ");
+                nombre = Console.ReadLine()!;
+            }
+            nombresJugadores[i] = nombre;
+        }
+
+        //----//
+        MensajeNaranja("Indica cuantas preguntas respondera cada uno: (1-10): ");
+
+        int cantidadPreguntas;
+        while (!int.TryParse(Console.ReadLine(), out cantidadPreguntas) || cantidadPreguntas < 1 || cantidadPreguntas > 10)
+        {
+            MensajeRojo("Error. Se esperaba un numero entero entre 1 - 10");
+        }
+
+        string[][] preguntasDisponibles = CargarPreguntasMezcladas(archivo);
+        //verificar cuantas preguntas hay
+        
+        int totalPreguntas = cantidadJugadores * cantidadPreguntas;
+        //si no hay preguntas suficientes en el archivo txt, no continua
+        if (totalPreguntas > preguntasDisponibles.Length)
+        {
+            MensajeRojo("No hay preguntas suficientes.");
+            Console.ReadKey();
+            return;
+        }
+        Console.Clear();
+
+        Musica("mariocarSTART.wav").Play();
+        for (int i = 3; i >= 1; i--)
+        {
+            Console.WriteLine(i + "...");
+            Thread.Sleep(1150);
+        }
+
+        int preguntaActual = 0;
+
+        //sistema de preguntas por rondas
+        //el ciclo se repetira dependiendo cuantas preguntas por jugador haya ingresado el usuario
+        for (int i = 0; i < cantidadPreguntas; i++)
+        {
+            //el segundo ciclo se repite segun cuantos jugadores sean
+            for (int j = 0; j < nombresJugadores.Length; j++)
+            {
+                Console.Clear();
+                MensajeAzul($"Turno de {nombresJugadores[j]}, pregunta numero: ({i + 1}/{cantidadPreguntas}).");
+
+                bool respondioCorrecto = MostrarPregunta(preguntasDisponibles[preguntaActual]); //aqui el metodo de las preguntas
+                preguntaActual++;
+                //si la funcion retorna true, significa que el usuario respondio bien, si es asi, se le suma 1 a su puntaje
+                if (respondioCorrecto) puntajeJugadores[j]++;
+                MensajeNaranja("Presione una tecla para continuar...");
+                Console.ReadKey();
+            }
+
+        }
+
+        //ordenamos la array con los puntajes para mostrarlo
+        //bubble sort metodo de ordenamiento
+        for (int i = 0; i < puntajeJugadores.Length - 1; i++)
+        {
+            for (int j = 0; j < puntajeJugadores.Length - 1; j++)
+            {
+                if (puntajeJugadores[j] < puntajeJugadores[j + 1])
+                {
+                    int numTemporal = puntajeJugadores[j];
+                    puntajeJugadores[j] = puntajeJugadores[j + 1];
+                    puntajeJugadores[j + 1] = numTemporal;
+
+                    //cambio de posicion a los nombres igual
+                    string nomTemporal = nombresJugadores[j];
+                    nombresJugadores[j] = nombresJugadores[j + 1];
+                    nombresJugadores[j + 1] = nomTemporal;
+                }
+            }
+        }
+
+        //mostramos el rank
+        Console.Clear();
+        MensajeVerde("Ranking de posiciones:");
+        for (int i = 0; i < puntajeJugadores.Length; i++)
+        {
+            MensajeAzul($"{i + 1}. {nombresJugadores[i]}. Puntaje: {puntajeJugadores[i]}.");
+            //guardar datos
+            GuardarGanadores("ganadoresMultiplayer.txt", nombresJugadores[i], puntajeJugadores[i]);
+        }
+
+        MensajeNaranja("Presiona cualquier tecla para continuar...");
+        Console.ReadKey();
+
+    }
+
+    //ganadores
+
+    public static void GuardarGanadores(string ruta, string nombre, int puntos)
+    {
+        string linea = $"{nombre} {puntos} puntos - {DateTime.Now.ToString()} \n";
+        File.AppendAllText(ruta, linea);
+    }
+
+    public static void MostrarGanadores()
+    {
+        string ruta = "ganadores.txt";
+
+        Console.Clear();
+        MensajeVerde("HISTORIAL DE GANADORES\n");
+
+        if (File.Exists(ruta))
+        {
+            string contenido = File.ReadAllText(ruta);
+            if (string.IsNullOrWhiteSpace(contenido))
+            {
+                MensajeRojo("No hay ganadores aun.");
+            }
+            else
+            {
+                Console.WriteLine(contenido);
+            }
+        }
+        else
+        {
+            MensajeRojo("No hay ganadores aun.");
+        }
+
+        MensajeNaranja("\nPresiona una tecla para volver al menú...");
+        Console.ReadKey();
+    }
+
+    //funciones varias
+    static int ModoDeJuego()
+    {
+        Console.Clear();
+        MensajeVerde("Como Deseas Jugar?");
+        MensajeAzul("1. Single Player");
+        MensajeAzul("2. Multiplayer Mode\n");
+
+        if (!Int32.TryParse(Console.ReadLine(), out int modo1) && modo1 > 0 && modo1 < 3)
+        {
+            return -1;
+        }
+        return modo1;
+    }
+
+
+    static SoundPlayer Musica(string sounds)
+    {
+        string ruta = $@"E:\TRABAJOS ORISON SOTO C#\PreguntasGenerales\GeneralTest\sounds\{sounds}";
+
+        return new SoundPlayer(ruta);
+    }
+
+    static void MensajeRojo(string mensaje)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine(mensaje);
+        Console.ResetColor();
+    }
+    static void MensajeVerde(string mensaje)
+    {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine(mensaje);
+        Console.ResetColor();
+    }
+    static void MensajeAzul(string mensaje)
+    {
+        Console.ForegroundColor = ConsoleColor.Blue;
+        Console.WriteLine(mensaje);
+        Console.ResetColor();
+    }
+    static void MensajeNaranja(string mensaje)
+    {
+        Console.ForegroundColor = ConsoleColor.DarkYellow;
+        Console.Write(mensaje);
+        Console.ResetColor();
+    }
+
+    public static string RamdomSonidoPerder()
+    {
+        Random rng = new Random();
+        string[] sonidosFallos = { "tanBruto.wav", "tanObvia.wav", "flojoflojo.wav"  };
+        int randomIndex = rng.Next(sonidosFallos.Length);
+        if (sonidosFallos == null || sonidosFallos.Length == 0)
+        {
+            return "";
+        }
+        
+        return sonidosFallos[randomIndex];
+    }
+
+}
+
